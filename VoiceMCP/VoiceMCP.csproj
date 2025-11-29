@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+	  <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010</NoWarn>
+	  <Nullable>enable</Nullable>
+	  <UserSecretsId>fa6a66a7-5504-460a-bd48-4127a456f17e</UserSecretsId>
+    
+    <!-- NuGet Package Properties -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>voicemcp</ToolCommandName>
+    <PackageId>VoiceMCP</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Tamir Dresher</Authors>
+    <Company>Tamir Dresher</Company>
+    <Description>Voice-enabled Model Context Protocol (MCP) server that enables AI agents to interact with users through voice using Azure OpenAI's Text-to-Speech and Whisper services.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/tamirdresher/mcp-voice-assist</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tamirdresher/mcp-voice-assist</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mcp;voice;azure-openai;tts;whisper;ai;semantic-kernel</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\icon.png" Pack="true" PackagePath="\" Condition="Exists('..\icon.png')" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+		<PackageReference Include="Microsoft.SemanticKernel" Version="1.28.0" />
+		<PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.28.0" />
+		<PackageReference Include="ModelContextProtocol" Version="0.4.1-preview.1" />
+		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="NAudio.Lame" Version="2.1.0" />
+
+	</ItemGroup>
+</Project>
