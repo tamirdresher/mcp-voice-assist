@@ -22,7 +22,6 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>mcp;voice;azure-openai;tts;whisper;ai;semantic-kernel</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

@@ -63,13 +63,13 @@ else
 
 builder.Services.AddKernel()
     .AddAzureOpenAITextToAudio(
-         deploymentName: azureTtsDeployment,
-         endpoint: azureEndpoint,
-         apiKey: azureApiKey)
+         deploymentName: azureTtsDeployment ?? throw new InvalidOperationException("TTS deployment name is not configured"),
+         endpoint: azureEndpoint ?? throw new InvalidOperationException("Azure OpenAI endpoint is not configured"),
+         apiKey: azureApiKey ?? throw new InvalidOperationException("Azure OpenAI API key is not configured"))
     .AddAzureOpenAIAudioToText(
-        deploymentName: azureWhisperDeployment,
-        endpoint: azureEndpoint,
-        apiKey: azureApiKey);
+        deploymentName: azureWhisperDeployment ?? throw new InvalidOperationException("Whisper deployment name is not configured"),
+        endpoint: azureEndpoint ?? throw new InvalidOperationException("Azure OpenAI endpoint is not configured"),
+        apiKey: azureApiKey ?? throw new InvalidOperationException("Azure OpenAI API key is not configured"));
 
 
 await builder.Build().RunAsync();

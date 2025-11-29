@@ -8,6 +8,10 @@ using System.Text;
 
 namespace VoiceMCP.Services
 {
+    /// <summary>
+    /// Implements voice interaction using Azure OpenAI services through Semantic Kernel.
+    /// Provides text-to-speech and speech-to-text capabilities using OpenAI TTS and Whisper.
+    /// </summary>
     public class SemanticKernelVoiceService : IVoiceService, IDisposable
     {
         private readonly Kernel _kernel;
@@ -16,6 +20,12 @@ namespace VoiceMCP.Services
         private readonly string _voice;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SemanticKernelVoiceService"/> class.
+        /// </summary>
+        /// <param name="kernel">The Semantic Kernel instance with configured audio services.</param>
+        /// <param name="voice">The voice to use for text-to-speech. Default is "alloy".</param>
+        /// <exception cref="ArgumentNullException">Thrown when kernel is null.</exception>
         public SemanticKernelVoiceService(Kernel kernel, string voice = "alloy")
         {
             _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
@@ -26,6 +36,7 @@ namespace VoiceMCP.Services
             _audioToTextService = kernel.GetRequiredService<IAudioToTextService>();
         }
 
+        /// <inheritdoc/>
         public async Task SpeakAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
