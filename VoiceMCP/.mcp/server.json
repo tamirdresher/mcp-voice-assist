@@ -1,0 +1,52 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.tamirdresher/voice-mcp",
+  "version": "1.0.0",
+  "description": "Voice-enabled Model Context Protocol (MCP) server that enables AI agents to interact with users through voice using Azure OpenAI's Text-to-Speech and Whisper services.",
+  "license": "MIT",
+  "homepage": "https://github.com/tamirdresher/mcp-voice-assist",
+  "repository": {
+    "url": "https://github.com/tamirdresher/mcp-voice-assist",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org",
+      "identifier": "VoiceMCP",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [],
+      "environmentVariables": [
+        {
+          "name": "AZURE_OPENAI_ENDPOINT",
+          "description": "Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "AZURE_OPENAI_API_KEY",
+          "description": "Azure OpenAI API key for authentication",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "AZURE_OPENAI_TTS_DEPLOYMENT",
+          "description": "Azure OpenAI TTS (Text-to-Speech) deployment name",
+          "isRequired": true,
+          "default": "tts",
+          "isSecret": false
+        },
+        {
+          "name": "AZURE_OPENAI_WHISPER_DEPLOYMENT",
+          "description": "Azure OpenAI Whisper (Speech-to-Text) deployment name",
+          "isRequired": true,
+          "default": "whisper",
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

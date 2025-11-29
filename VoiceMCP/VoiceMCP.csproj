@@ -2,17 +2,21 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
 	  <NoWarn>$(NoWarn);SKEXP0001;SKEXP0010;CS1591</NoWarn>
 	  <Nullable>enable</Nullable>
 	  <UserSecretsId>fa6a66a7-5504-460a-bd48-4127a456f17e</UserSecretsId>
+    <RollForward>Major</RollForward>
     
-    <!-- NuGet Package Properties -->
+    <!-- Set up the NuGet package to be an MCP server -->
     <PackAsTool>true</PackAsTool>
+    <PackageType>McpServer</PackageType>
     <ToolCommandName>voicemcp</ToolCommandName>
+    
+    <!-- Set recommended package metadata -->
     <PackageId>VoiceMCP</PackageId>
-    <Version>1.0.0</Version>
+    <Version>0.0.1-prerelease</Version>
     <Authors>Tamir Dresher</Authors>
     <Company>Tamir Dresher</Company>
     <Description>Voice-enabled Model Context Protocol (MCP) server that enables AI agents to interact with users through voice using Azure OpenAI's Text-to-Speech and Whisper services.</Description>
@@ -20,12 +24,14 @@
     <PackageProjectUrl>https://github.com/tamirdresher/mcp-voice-assist</PackageProjectUrl>
     <RepositoryUrl>https://github.com/tamirdresher/mcp-voice-assist</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>mcp;voice;azure-openai;tts;whisper;ai;semantic-kernel</PackageTags>
+    <PackageTags>AI;MCP;server;stdio;voice;azure-openai;tts;whisper;semantic-kernel</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- Include additional files for browsing the MCP server -->
   <ItemGroup>
+    <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\icon.png" Pack="true" PackagePath="\" Condition="Exists('..\icon.png')" />
   </ItemGroup>
