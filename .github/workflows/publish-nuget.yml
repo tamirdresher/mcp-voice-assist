@@ -22,7 +22,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '9.0.x'
         
     - name: Restore dependencies
       run: dotnet restore VoiceMCP/VoiceMCP.csproj
@@ -44,16 +44,16 @@ jobs:
       shell: pwsh
       
     - name: Pack NuGet package
-      run: dotnet pack VoiceMCP/VoiceMCP.csproj --configuration Release --no-build --output ./nupkg /p:Version=${{ env.PACKAGE_VERSION }}
+      run: dotnet pack VoiceMCP/VoiceMCP.csproj --configuration Release --no-build --output nupkg /p:Version=${{ env.PACKAGE_VERSION }}
       
     - name: Publish to NuGet
-      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
       
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: ./nupkg/*.nupkg
+        files: nupkg/*.nupkg
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
