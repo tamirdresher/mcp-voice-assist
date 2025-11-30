@@ -16,7 +16,7 @@
     
     <!-- Set recommended package metadata -->
     <PackageId>VoiceMCP</PackageId>
-    <Version>0.0.1-prerelease</Version>
+    <Version>1.0.2</Version>
     <Authors>Tamir Dresher</Authors>
     <Company>Tamir Dresher</Company>
     <Description>Voice-enabled Model Context Protocol (MCP) server that enables AI agents to interact with users through voice using Azure OpenAI's Text-to-Speech and Whisper services.</Description>
