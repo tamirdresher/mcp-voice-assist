@@ -1,5 +1,6 @@
 # VoiceMCP - Voice-Enabled Model Context Protocol Server
 
+[![NuGet](https://img.shields.io/nuget/v/VoiceMCP)](https://www.nuget.org/packages/VoiceMCP)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![MCP](https://img.shields.io/badge/MCP-0.4.1-blue)](https://modelcontextprotocol.io)
@@ -66,15 +67,23 @@ graph TD
 
 ### Option 1: Install as .NET Tool (Recommended)
 
-Once published to NuGet, install globally:
+Install VoiceMCP globally from NuGet:
 
 ```bash
-# Install the tool globally
+# Install the latest stable version
 dotnet tool install --global VoiceMCP
+
+# Or install a specific prerelease version
+dotnet tool install --global VoiceMCP --version 0.0.1-prerelease
+
+# Update to the latest version
+dotnet tool update --global VoiceMCP
 
 # The tool will be available as 'voicemcp' command
 voicemcp
 ```
+
+**Note**: The MCP server requires environment variables to be configured. When running directly without configuration, you'll see an error message indicating missing credentials. This is expected - see the [Configuration](#configuration) section below.
 
 ### Option 2: Build from Source
 
@@ -111,10 +120,10 @@ $env:AZURE_OPENAI_TTS_DEPLOYMENT = "tts-1"
 $env:AZURE_OPENAI_WHISPER_DEPLOYMENT = "whisper-1"
 ```
 
-Or use the provided setup script:
+Or use the provided setup script from the `/scripts/setup/` directory:
 
 ```powershell
-.\setup-azure-openai-env.ps1
+.\scripts\setup\setup-azure-openai-env.ps1
 ```
 
 ### Option 2: User Secrets (For Development)
@@ -128,17 +137,17 @@ dotnet user-secrets set "AzureOpenAI:TtsDeploymentName" "tts-1"
 dotnet user-secrets set "AzureOpenAI:WhisperDeploymentName" "whisper-1"
 ```
 
-Or use the setup script:
+Or use the setup script from the `/scripts/setup/` directory:
 
 ```powershell
-.\setup-azure-secrets.ps1
+.\scripts\setup\setup-azure-secrets.ps1
 ```
 
 ### MCP Client Configuration
 
-#### Using Installed Tool
+#### Using Installed Tool (Recommended)
 
-Add VoiceMCP to your MCP client configuration:
+Add VoiceMCP to your MCP client configuration (e.g., in VS Code or Cline):
 
 ```json
 {
@@ -155,6 +164,13 @@ Add VoiceMCP to your MCP client configuration:
   }
 }
 ```
+
+**Required Environment Variables**:
+- `AZURE_OPENAI_ENDPOINT`: Your Azure OpenAI service endpoint
+- `AZURE_OPENAI_API_KEY`: Your Azure OpenAI API key (marked as secret)
+- `AZURE_OPENAI_TTS_DEPLOYMENT`: Text-to-Speech deployment name (default: "tts")
+- `AZURE_OPENAI_WHISPER_DEPLOYMENT`: Whisper speech recognition deployment name (default: "whisper")
+- `VOICE` (optional): Voice selection for TTS (default: "alloy")
 
 #### Using Source Code
 
@@ -179,6 +195,93 @@ Add VoiceMCP to your MCP client configuration:
   }
 }
 ```
+
+## 📚 Available Tools
+
+VoiceMCP exposes the following tools to MCP clients:
+
+### `voice_ask_user`
+Ask the user a question via voice and receive a voice response.
+
+**Parameters**:
+- `question` (string): The question to ask the user
+- `confirm` (boolean, optional): Whether to ask for confirmation (default: true)
+
+### `voice_ask_for_approval`
+Request user approval for an action via voice.
+
+**Parameters**:
+- `action_description` (string): Description of the action requiring approval
+- `details` (string, optional): Additional details about the action
+
+### Example Usage
+
+```json
+{
+  "tool": "voice_ask_user",
+  "arguments": {
+    "question": "What is your preferred programming language?",
+    "confirm": true
+  }
+}
+```
+
+## 🛠️ Scripts
+
+The repository includes helpful PowerShell scripts organized in the `/scripts/` directory:
+
+### Setup Scripts (`/scripts/setup/`)
+- `setup-azure-openai-env.ps1` - Configure Azure OpenAI environment variables
+- `setup-azure-secrets.ps1` - Set up user secrets for development
+- `setup-github-repo.ps1` - Initialize GitHub repository settings
+
+### Test Scripts (`/scripts/test/`)
+- `test-mcp.ps1` - Test MCP server functionality
+- `test-mcp-interactive.ps1` - Interactive MCP testing
+- `test-stdio-separation.ps1` - Test stdio communication
+- `test-voice-tool.ps1` - Test voice tool functionality
+
+See [`scripts/README.md`](scripts/README.md) for detailed documentation.
+
+## 🔍 Troubleshooting
+
+### Installation Issues
+
+**Issue**: `Tool 'VoiceMCP' failed to install`
+- **Solution**: Ensure you have .NET 10.0 SDK installed: `dotnet --version`
+- Verify NuGet package is available: https://www.nuget.org/packages/VoiceMCP
+
+**Issue**: `TTS deployment name is not configured`
+- **Solution**: This error appears when environment variables are missing. Configure the required environment variables as shown in the [Configuration](#configuration) section.
+
+### Runtime Issues
+
+**Issue**: `No valid credentials found`
+- **Solution**: Set the required environment variables before running voicemcp
+- For MCP clients: Add environment variables to your MCP configuration
+- For development: Use user secrets or the setup scripts
+
+**Issue**: Microphone not detected
+- **Solution**:
+  - Ensure your microphone is connected and enabled in Windows Sound settings
+  - Grant microphone permissions to the application
+  - Check Windows Privacy settings for microphone access
+
+**Issue**: Audio playback not working
+- **Solution**:
+  - Verify speakers/headphones are connected
+  - Check Windows Sound settings
+  - Ensure audio output device is set as default
+
+### Getting Help
+
+For additional support:
+1. Check the [scripts/README.md](scripts/README.md) for script documentation
+2. Review existing [GitHub Issues](https://github.com/tamirdresher/mcp-voice-assist/issues)
+3. Create a new issue with:
+   - Error messages
+   - Steps to reproduce
+   - Your environment (.NET version, Windows version, etc.)
 
 ## 🤝 Contributing
 
