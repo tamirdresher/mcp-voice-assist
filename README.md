@@ -226,63 +226,6 @@ Request user approval for an action via voice.
 }
 ```
 
-## 🛠️ Scripts
-
-The repository includes helpful PowerShell scripts organized in the `/scripts/` directory:
-
-### Setup Scripts (`/scripts/setup/`)
-- `setup-azure-openai-env.ps1` - Configure Azure OpenAI environment variables
-- `setup-azure-secrets.ps1` - Set up user secrets for development
-- `setup-github-repo.ps1` - Initialize GitHub repository settings
-
-### Test Scripts (`/scripts/test/`)
-- `test-mcp.ps1` - Test MCP server functionality
-- `test-mcp-interactive.ps1` - Interactive MCP testing
-- `test-stdio-separation.ps1` - Test stdio communication
-- `test-voice-tool.ps1` - Test voice tool functionality
-
-See [`scripts/README.md`](scripts/README.md) for detailed documentation.
-
-## 🔍 Troubleshooting
-
-### Installation Issues
-
-**Issue**: `Tool 'VoiceMCP' failed to install`
-- **Solution**: Ensure you have .NET 10.0 SDK installed: `dotnet --version`
-- Verify NuGet package is available: https://www.nuget.org/packages/VoiceMCP
-
-**Issue**: `TTS deployment name is not configured`
-- **Solution**: This error appears when environment variables are missing. Configure the required environment variables as shown in the [Configuration](#configuration) section.
-
-### Runtime Issues
-
-**Issue**: `No valid credentials found`
-- **Solution**: Set the required environment variables before running voicemcp
-- For MCP clients: Add environment variables to your MCP configuration
-- For development: Use user secrets or the setup scripts
-
-**Issue**: Microphone not detected
-- **Solution**:
-  - Ensure your microphone is connected and enabled in Windows Sound settings
-  - Grant microphone permissions to the application
-  - Check Windows Privacy settings for microphone access
-
-**Issue**: Audio playback not working
-- **Solution**:
-  - Verify speakers/headphones are connected
-  - Check Windows Sound settings
-  - Ensure audio output device is set as default
-
-### Getting Help
-
-For additional support:
-1. Check the [scripts/README.md](scripts/README.md) for script documentation
-2. Review existing [GitHub Issues](https://github.com/tamirdresher/mcp-voice-assist/issues)
-3. Create a new issue with:
-   - Error messages
-   - Steps to reproduce
-   - Your environment (.NET version, Windows version, etc.)
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please see [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
@@ -305,12 +248,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [NAudio](https://github.com/naudio/NAudio) - Audio library for .NET
 - [Azure OpenAI Service](https://azure.microsoft.com/products/ai-services/openai-service) - AI services
 
-## 📧 Support
-
-For issues, questions, or contributions:
-- Open an issue on GitHub
-- Check existing documentation in the `/docs` folder
-- Review troubleshooting section above
 
 ---
 
