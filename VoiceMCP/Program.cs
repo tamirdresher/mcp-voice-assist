@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using VoiceMCP.Services;
+using VoiceMCP.Tools;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -20,18 +21,31 @@ if (builder.Environment.IsDevelopment())
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
 
-builder.Services
+var mcpBuilder = builder.Services
     .AddMcpServer()
-    .WithStdioServerTransport()
-    .WithToolsFromAssembly();
+    .WithStdioServerTransport();
 
-builder.Services.AddSingleton<IVoiceService, SemanticKernelVoiceService>();
+// Conditionally register Teams services and tools
+var teamsWebhookUrl = Environment.GetEnvironmentVariable("TEAMS_WEBHOOK_URL");
+if (!string.IsNullOrEmpty(teamsWebhookUrl))
+{
+    var projectName = Path.GetFileName(Path.GetFullPath("."));
+    builder.Services.AddSingleton<ITeamsNotificationService>(sp =>
+        new TeamsWebhookService(
+            new HttpClient(),
+            teamsWebhookUrl,
+            projectName));
+    mcpBuilder.WithTools<TeamsTools>();
+    Console.Error.WriteLine($"Teams integration enabled for project '{projectName}'.");
+}
+else
+{
+    Console.Error.WriteLine("Teams webhook URL not configured. Teams tools will not be available.");
+}
 
-// Hybrid credential loading: Environment variables (MCP clients) → User secrets (dev) → Fail
-// 1. Try environment variables first (for MCP clients)
+// Conditionally register Voice services and tools
 var azureEndpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 var azureApiKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY");
-var azureDeployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
 var azureTtsDeployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_TTS_DEPLOYMENT");
 var azureWhisperDeployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_WHISPER_DEPLOYMENT");
 
@@ -41,19 +55,13 @@ if (string.IsNullOrEmpty(azureEndpoint))
     var configEndpoint = configuration["AzureOpenAI:Endpoint"];
     var configApiKey = configuration["AzureOpenAI:ApiKey"];
 
-    // Only use config values if they are non-empty
     if (!string.IsNullOrWhiteSpace(configEndpoint) && !string.IsNullOrWhiteSpace(configApiKey))
     {
         azureEndpoint = configEndpoint;
         azureApiKey = configApiKey;
-        azureDeployment = configuration["AzureOpenAI:DeploymentName"];
         azureTtsDeployment = configuration["AzureOpenAI:TtsDeploymentName"];
         azureWhisperDeployment = configuration["AzureOpenAI:WhisperDeploymentName"];
         Console.Error.WriteLine("Loaded Azure OpenAI credentials from user secrets/appsettings.json");
-    }
-    else
-    {
-        Console.Error.WriteLine("No valid credentials found in environment variables or configuration");
     }
 }
 else
@@ -61,15 +69,26 @@ else
     Console.Error.WriteLine("Loaded Azure OpenAI credentials from environment variables");
 }
 
-builder.Services.AddKernel()
-    .AddAzureOpenAITextToAudio(
-         deploymentName: azureTtsDeployment ?? throw new InvalidOperationException("TTS deployment name is not configured"),
-         endpoint: azureEndpoint ?? throw new InvalidOperationException("Azure OpenAI endpoint is not configured"),
-         apiKey: azureApiKey ?? throw new InvalidOperationException("Azure OpenAI API key is not configured"))
-    .AddAzureOpenAIAudioToText(
-        deploymentName: azureWhisperDeployment ?? throw new InvalidOperationException("Whisper deployment name is not configured"),
-        endpoint: azureEndpoint ?? throw new InvalidOperationException("Azure OpenAI endpoint is not configured"),
-        apiKey: azureApiKey ?? throw new InvalidOperationException("Azure OpenAI API key is not configured"));
+if (!string.IsNullOrEmpty(azureEndpoint) && !string.IsNullOrEmpty(azureApiKey)
+    && !string.IsNullOrEmpty(azureTtsDeployment) && !string.IsNullOrEmpty(azureWhisperDeployment))
+{
+    builder.Services.AddSingleton<IVoiceService, SemanticKernelVoiceService>();
+    builder.Services.AddKernel()
+        .AddAzureOpenAITextToAudio(
+             deploymentName: azureTtsDeployment,
+             endpoint: azureEndpoint,
+             apiKey: azureApiKey)
+        .AddAzureOpenAIAudioToText(
+            deploymentName: azureWhisperDeployment,
+            endpoint: azureEndpoint,
+            apiKey: azureApiKey);
+    mcpBuilder.WithTools<AskUserTool>();
+    Console.Error.WriteLine("Voice tools enabled.");
+}
+else
+{
+    Console.Error.WriteLine("Azure OpenAI credentials not configured. Voice tools will not be available.");
+}
 
 
 await builder.Build().RunAsync();

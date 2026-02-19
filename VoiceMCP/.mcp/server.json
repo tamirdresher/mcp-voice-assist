@@ -45,6 +45,12 @@
           "isRequired": true,
           "default": "whisper",
           "isSecret": false
+        },
+        {
+          "name": "TEAMS_WEBHOOK_URL",
+          "description": "Microsoft Teams Incoming Webhook URL for sending notifications and questions to a Teams channel. If not set, Teams tools will not be available.",
+          "isRequired": false,
+          "isSecret": true
         }
       ]
     }

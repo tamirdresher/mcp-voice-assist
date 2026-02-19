@@ -6,7 +6,6 @@ using VoiceMCP.Services;
 namespace VoiceMCP.Tools
 {    
 
-    [McpServerToolType]
     public class AskUserTool
     {
         const int MAX_RETRIES = 4;
