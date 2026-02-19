@@ -1,0 +1,21 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "voicemcp-init-2026-02-19",
+      "universe": "The Usual Suspects",
+      "timestamp": "2026-02-19T14:46:15Z"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "voicemcp-init-2026-02-19": {
+      "universe": "The Usual Suspects",
+      "agent_map": {
+        "keaton": "Keaton",
+        "fenster": "Fenster",
+        "mcmanus": "McManus",
+        "hockney": "Hockney"
+      },
+      "created_at": "2026-02-19T14:46:15Z"
+    }
+  }
+}
