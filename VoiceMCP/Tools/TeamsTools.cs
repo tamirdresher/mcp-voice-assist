@@ -4,8 +4,6 @@ using VoiceMCP.Services;
 
 namespace VoiceMCP.Tools
 {
-    // No [McpServerToolType] — Fenster will register this class explicitly
-    // only when the Teams webhook URL is configured.
     public class TeamsTools
     {
         private readonly ITeamsNotificationService _teamsService;
@@ -32,13 +30,20 @@ namespace VoiceMCP.Tools
             }
         }
 
-        [McpServerTool, Description("Post a question to a Microsoft Teams channel for the user to see. Since Teams webhooks are one-way, this posts the question as a card. The user should respond through another channel.")]
+        [McpServerTool, Description(@"Post a question to a Microsoft Teams channel and get the user's reply. 
+This tool posts an adaptive card to the Teams channel. The user replies in the thread.
+After calling this tool, use the Playwright browser to poll for the thread reply:
+1. Navigate to the Teams wizard channel in the browser
+2. Find the message group containing the returned question ID
+3. Look for thread replies inside that group using: locator('[aria-label*=""reply""]').locator('p')
+4. Return the thread reply text as the user's answer")]
         public async Task<string> AskUserViaTeams(
             [Description("The question to post to Teams")] string question)
         {
             try
             {
-                return await _teamsService.AskQuestionAsync(question);
+                var result = await _teamsService.AskQuestionAsync(question);
+                return result ?? "No response.";
             }
             catch (Exception ex)
             {

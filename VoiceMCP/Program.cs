@@ -31,47 +31,12 @@ if (!string.IsNullOrEmpty(teamsWebhookUrl))
 {
     var projectName = Path.GetFileName(Path.GetFullPath("."));
     
-    // Power Automate flow URL for two-way adaptive card communication
-    var teamsFlowUrl = Environment.GetEnvironmentVariable("TEAMS_FLOW_URL");
-    if (!string.IsNullOrEmpty(teamsFlowUrl))
-    {
-        Console.Error.WriteLine("Teams Power Automate flow enabled (two-way adaptive cards).");
-    }
-    
-    // Optional Gateway integration (default: http://localhost:8080)
-    var gatewayUrl = Environment.GetEnvironmentVariable("VOICEMCP_GATEWAY_URL") ?? "http://localhost:8080";
-    IGatewayClient? gatewayClient = null;
-    
-    if (string.IsNullOrEmpty(teamsFlowUrl)) // Gateway only needed when flow is not configured
-    {
-        try
-        {
-            gatewayClient = new GatewayClient(new HttpClient(), gatewayUrl);
-            builder.Services.AddSingleton(gatewayClient);
-            Console.Error.WriteLine($"Teams Gateway integration enabled at {gatewayUrl}.");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Teams Gateway integration disabled: {ex.Message}");
-        }
-    }
-    
     // Register Teams service
     builder.Services.AddSingleton<ITeamsNotificationService>(sp =>
         new TeamsWebhookService(
             new HttpClient(),
             teamsWebhookUrl,
-            projectName,
-            teamsFlowUrl,
-            sp.GetService<IGatewayClient>()));
-    
-    // Register reply listener if Gateway is available
-    if (gatewayClient != null)
-    {
-        builder.Services.AddSingleton<TeamsReplyListener>();
-        builder.Services.AddHostedService<TeamsReplyListener>(sp => sp.GetRequiredService<TeamsReplyListener>());
-        builder.Services.AddHostedService<GatewayRegistrationService>();
-    }
+            projectName));
     
     mcpBuilder.WithTools<TeamsTools>();
     Console.Error.WriteLine($"Teams integration enabled for project '{projectName}'.");
