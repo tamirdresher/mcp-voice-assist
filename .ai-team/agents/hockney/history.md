@@ -16,3 +16,11 @@
 - xUnit 2.9.3 + xunit.runner.visualstudio 3.0.2 + Microsoft.NET.Test.Sdk 17.13.0 is the working package combo for net10.0
 - Mock `HttpMessageHandler` via `Moq.Protected()` is the standard pattern for testing `HttpClient`-based services
 - 34 tests total: 20 for TeamsWebhookService, 10 for TeamsTools, 4 for conditional registration contracts
+- Two-way Teams tests written (59 tests): GatewayClient (11), TeamsReplyListener (8), TeamsWebhookServiceReply (15), Gateway integration (25)
+- Tests written against interfaces and expected behavior from Keaton's architecture doc, not implementation details
+- Gateway integration tests include in-memory implementation to verify routing logic and correlation ID parsing
+- Tests use dynamic typing pattern to work before implementation exists - will bind to actual types when McManus/Fenster land code
+- All tests cover critical edge cases: timeouts, concurrent questions, malformed payloads, stale instances, network failures
+- Port allocation logic tested (8090-8190 range with collision handling)
+- Correlation ID format verified: q-{instanceId}-{sequenceNumber} with proper incrementing
+- No modifications made to VoiceMCP source files per task constraints - test-only changes

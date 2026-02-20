@@ -29,3 +29,16 @@
 - ModelContextProtocol 0.4.1-preview.1, Microsoft.SemanticKernel 1.28.0, NAudio 2.2.1, NAudio.Lame 2.1.0
 - Target: net10.0, packaged as tool with PackageType=McpServer
 - Logging to stderr (stdout reserved for MCP protocol)
+
+### Two-Way Teams Communication Architecture (2025-06)
+- **Problem:** Enable AskUserViaTeams to block and wait for replies without bot framework/Entra app
+- **Constraints:** Multiple instances, shared Teams channel, single Outgoing Webhook callback URL, 5s timeout
+- **Solution:** Shared Gateway/Router process that receives all @mentions and routes to correct instance
+- **Correlation:** Question IDs format `q-{instanceId}-{seq}` embedded in adaptive cards, parsed from replies
+- **Routing:** Gateway maintains registry of instances (port, callback URL), forwards replies via HTTP POST
+- **Listener:** Each instance runs HTTP listener on auto-allocated port (8090+)
+- **Blocking:** AskQuestionAsync uses TaskCompletionSource, waits up to 120s for Gateway callback
+- **Components:** IGatewayClient (registration), TeamsReplyListener (HTTP endpoint), updated TeamsWebhookService
+- **Gateway:** Separate ASP.NET Core app (Gateway/Program.cs), responds to Teams <5s, forwards async
+- **Degradation:** Instances work without Gateway (one-way notifications only), graceful timeout handling
+- **See:** .ai-team/decisions/inbox/keaton-teams-reply-architecture.md for full architecture
