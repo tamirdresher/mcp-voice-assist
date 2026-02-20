@@ -109,9 +109,27 @@ public class TeamsPlaywrightPoller : BackgroundService
             }
             
             _logger.LogInformation($"[Playwright] Teams loaded at: {_page.Url}");
-            _logger.LogInformation($"[Playwright] Navigating to wizard channel: {ChannelId}");
-            var channelUrl = $"{TeamsWebUrl}?#/conversations/{Uri.EscapeDataString(ChannelId)}?ctx=channel";
-            await _page.GotoAsync(channelUrl, new() { Timeout = 60000, WaitUntil = WaitUntilState.DOMContentLoaded });
+            
+            // Click wizard channel in sidebar (more reliable than URL navigation)
+            _logger.LogInformation("[Playwright] Looking for wizard channel in sidebar...");
+            var wizardChannel = _page.Locator($"[data-testid*=\"favorite-channel-list-item-{ChannelId}\"]");
+            if (await wizardChannel.CountAsync() == 0)
+            {
+                // Fallback: try any element containing the channel ID
+                wizardChannel = _page.Locator($"[data-tid*=\"{ChannelId}\"]");
+            }
+            if (await wizardChannel.CountAsync() == 0)
+            {
+                // Second fallback: navigate by URL
+                _logger.LogInformation("[Playwright] Sidebar click failed, navigating by URL");
+                var channelUrl = $"{TeamsWebUrl}?#/conversations/{Uri.EscapeDataString(ChannelId)}?ctx=channel";
+                await _page.GotoAsync(channelUrl, new() { Timeout = 60000, WaitUntil = WaitUntilState.DOMContentLoaded });
+            }
+            else
+            {
+                _logger.LogInformation("[Playwright] Found wizard channel, clicking...");
+                await wizardChannel.First.EvaluateAsync("node => node.click()");
+            }
             await Task.Delay(5000, stoppingToken);
             
             PlaywrightStatus = "connected";
@@ -162,6 +180,8 @@ public class TeamsPlaywrightPoller : BackgroundService
         }
     }
     
+    private bool _domDiagDone = false;
+    
     private async Task PollForRepliesAsync(CancellationToken stoppingToken)
     {
         if (_page == null) return;
@@ -169,19 +189,74 @@ public class TeamsPlaywrightPoller : BackgroundService
         await _page.Keyboard.PressAsync("End");
         await Task.Delay(1500, stoppingToken);
         
-        var messageGroups = await _page.Locator("[role=\"group\"]").AllAsync();
+        // One-time DOM diagnostic: find what contains our question text
+        if (!_domDiagDone && _questionToInstance.Any())
+        {
+            _domDiagDone = true;
+            try
+            {
+                var diag = await _page.EvaluateAsync<string>(@"() => {
+                    const results = [];
+                    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+                    let node;
+                    while (node = walker.nextNode()) {
+                        if (node.textContent && node.textContent.includes('q-')) {
+                            let el = node.parentElement;
+                            let path = [];
+                            for (let i = 0; i < 5 && el; i++) {
+                                path.push(el.tagName + (el.getAttribute('role') ? '[role=' + el.getAttribute('role') + ']' : '') + (el.getAttribute('data-tid') ? '[data-tid=' + el.getAttribute('data-tid') + ']' : ''));
+                                el = el.parentElement;
+                            }
+                            results.push({ text: node.textContent.substring(0, 100), path: path.join(' < ') });
+                        }
+                    }
+                    return JSON.stringify(results.slice(-10));
+                }");
+                _logger.LogInformation("[Playwright] DOM DIAGNOSTIC — elements containing 'q-': {Diag}", diag);
+            }
+            catch (Exception ex) { _logger.LogWarning("[Playwright] DOM diagnostic failed: {Err}", ex.Message); }
+        }
         
-        foreach (var group in messageGroups.TakeLast(20))
+        var messageGroups = await _page.Locator("[role=\"group\"]").AllAsync();
+        var lastGroups = messageGroups.TakeLast(20).ToList();
+        _logger.LogInformation("[Playwright] Poll cycle: found {Count} message groups, scanning last {Scan}", messageGroups.Count, lastGroups.Count);
+        
+        // Diagnostic: log last 3 groups' text snippets
+        foreach (var g in lastGroups.TakeLast(3))
         {
             try
             {
-                var groupText = await group.TextContentAsync();
+                var snippet = await g.InnerTextAsync();
+                if (!string.IsNullOrEmpty(snippet))
+                {
+                    var truncated = snippet.Length > 200 ? snippet[..200] + "..." : snippet;
+                    _logger.LogInformation("[Playwright] Group snippet: {Snippet}", truncated.Replace("\n", " | "));
+                }
+            }
+            catch { }
+        }
+        
+        foreach (var group in lastGroups)
+        {
+            try
+            {
+                // Use InnerTextAsync for visible text (TextContentAsync misses adaptive card content)
+                var groupText = await group.InnerTextAsync();
                 if (string.IsNullOrEmpty(groupText)) continue;
                 
-                var sentinelMatch = Regex.Match(groupText, @"⚡ (q-[a-f0-9]{8}-\d{3})");
+                // Try sentinel pattern first: ⚡ q-xxx-nnn
+                var sentinelMatch = Regex.Match(groupText, @"⚡ (q-[a-zA-Z0-9]+-\d{3})");
+                // Fallback: card title pattern [q-xxx-nnn]
+                if (!sentinelMatch.Success)
+                    sentinelMatch = Regex.Match(groupText, @"\[(q-[a-zA-Z0-9]+-\d{3})\]");
+                // Second fallback: 🤖 Question [q-xxx-nnn] title format (capture inner id)
+                if (!sentinelMatch.Success)
+                    sentinelMatch = Regex.Match(groupText, @"🤖\s*Question\s*\[(q-[a-zA-Z0-9]+-\d{3})\]");
+                
                 if (!sentinelMatch.Success) continue;
                 
                 var questionId = sentinelMatch.Groups[1].Value;
+                _logger.LogInformation("[Playwright] Detected question {QuestionId} in message group", questionId);
                 
                 if (_processedQuestions.Contains(questionId))
                     continue;
