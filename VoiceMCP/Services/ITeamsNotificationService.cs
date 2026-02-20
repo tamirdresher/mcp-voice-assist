@@ -13,12 +13,20 @@ namespace VoiceMCP.Services
         Task SendNotificationAsync(string message, string? title = null);
 
         /// <summary>
-        /// Posts a question adaptive card to the configured Teams channel.
-        /// Since Teams Incoming Webhooks are one-way, this posts the card and returns
-        /// a confirmation message rather than waiting for a response.
+        /// Posts a question adaptive card to the configured Teams channel and waits for a reply.
+        /// If Gateway is configured, blocks until user replies or timeout is reached.
+        /// If Gateway is unavailable, degrades to one-way notification.
         /// </summary>
         /// <param name="question">The question to post.</param>
-        /// <returns>A message confirming the question was posted to Teams.</returns>
-        Task<string> AskQuestionAsync(string question);
+        /// <param name="timeoutSeconds">Timeout in seconds to wait for reply (default: 120).</param>
+        /// <returns>The user's answer, a timeout message, or a fallback one-way confirmation.</returns>
+        Task<string?> AskQuestionAsync(string question, int timeoutSeconds = 120);
+
+        /// <summary>
+        /// Called by TeamsReplyListener when a reply is received from Gateway.
+        /// </summary>
+        /// <param name="questionId">The question identifier.</param>
+        /// <param name="answer">The user's answer.</param>
+        void OnReplyReceived(string questionId, string answer);
     }
 }

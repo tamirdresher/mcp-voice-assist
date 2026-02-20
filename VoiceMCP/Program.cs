@@ -30,13 +30,56 @@ var teamsWebhookUrl = Environment.GetEnvironmentVariable("TEAMS_WEBHOOK_URL");
 if (!string.IsNullOrEmpty(teamsWebhookUrl))
 {
     var projectName = Path.GetFileName(Path.GetFullPath("."));
+    var gatewayUrl = Environment.GetEnvironmentVariable("VOICEMCP_GATEWAY_URL");
     
-    // Register Teams service
+    // Generate shared secret for this session
+    var secret = Guid.NewGuid().ToString("N");
+    
+    // Register IHttpClientFactory
+    builder.Services.AddHttpClient();
+    
+    // Register Gateway client if URL is configured
+    IGatewayClient? gatewayClient = null;
+    if (!string.IsNullOrEmpty(gatewayUrl))
+    {
+        builder.Services.AddSingleton<IGatewayClient>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            return new GatewayClient(httpClientFactory.CreateClient("gateway"), gatewayUrl);
+        });
+        
+        // Register TeamsReplyListener as singleton and hosted service
+        builder.Services.AddSingleton(sp => 
+            new TeamsReplyListener(sp.GetRequiredService<ITeamsNotificationService>(), secret));
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<TeamsReplyListener>());
+        
+        // Register GatewayRegistrationService as hosted service
+        builder.Services.AddSingleton(sp =>
+            new GatewayRegistrationService(
+                sp.GetRequiredService<IGatewayClient>(),
+                sp.GetRequiredService<TeamsReplyListener>(),
+                sp.GetRequiredService<ITeamsNotificationService>(),
+                secret));
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<GatewayRegistrationService>());
+        
+        // Register HeartbeatService as hosted service
+        builder.Services.AddSingleton(sp =>
+            new HeartbeatService(
+                sp.GetRequiredService<IGatewayClient>(),
+                sp.GetRequiredService<ITeamsNotificationService>(),
+                secret));
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<HeartbeatService>());
+        
+        Console.Error.WriteLine($"Gateway integration enabled at {gatewayUrl}");
+    }
+    
+    // Register Teams service with optional gateway client
     builder.Services.AddSingleton<ITeamsNotificationService>(sp =>
-        new TeamsWebhookService(
-            new HttpClient(),
-            teamsWebhookUrl,
-            projectName));
+    {
+        var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+        var gateway = string.IsNullOrEmpty(gatewayUrl) ? null : sp.GetRequiredService<IGatewayClient>();
+        return new TeamsWebhookService(httpClientFactory, teamsWebhookUrl, projectName, gateway);
+    });
     
     mcpBuilder.WithTools<TeamsTools>();
     Console.Error.WriteLine($"Teams integration enabled for project '{projectName}'.");

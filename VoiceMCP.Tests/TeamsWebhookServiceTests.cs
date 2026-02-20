@@ -29,8 +29,10 @@ namespace VoiceMCP.Tests
                     Content = new StringContent(responseBody)
                 });
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
             return (service, handler);
         }
 
@@ -69,8 +71,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Build succeeded");
 
@@ -96,8 +99,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Test message");
 
@@ -122,8 +126,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Deploy complete", "Deployment Status");
 
@@ -148,8 +153,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Test message");
 
@@ -175,8 +181,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("All tests passed — 247/247 green");
 
@@ -201,8 +208,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Test");
 
@@ -291,8 +299,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.AskQuestionAsync("Should I deploy to prod?");
 
@@ -316,8 +325,9 @@ namespace VoiceMCP.Tests
                     ItExpr.IsAny<CancellationToken>())
                 .ThrowsAsync(new HttpRequestException("Network unreachable"));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             // PostCardAsync catches all exceptions, so this should not throw
             var exception = await Record.ExceptionAsync(() =>
@@ -338,8 +348,9 @@ namespace VoiceMCP.Tests
                     ItExpr.IsAny<CancellationToken>())
                 .ThrowsAsync(new HttpRequestException("DNS resolution failed"));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             var result = await service.AskQuestionAsync("Test question");
 
@@ -367,8 +378,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Schema test");
 
@@ -394,8 +406,9 @@ namespace VoiceMCP.Tests
                 })
                 .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
-            var httpClient = new HttpClient(handler.Object);
-            var service = new TeamsWebhookService(httpClient, TestWebhookUrl, TestProjectName);
+            var mockFactory = new Mock<IHttpClientFactory>();
+            mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(handler.Object));
+            var service = new TeamsWebhookService(mockFactory.Object, TestWebhookUrl, TestProjectName);
 
             await service.SendNotificationAsync("Version test");
 
@@ -406,3 +419,4 @@ namespace VoiceMCP.Tests
         #endregion
     }
 }
+
