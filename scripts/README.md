@@ -6,6 +6,8 @@ This directory contains utility scripts for the VoiceBridgeMCP project, organize
 
 ```
 scripts/
+├── start-gateway.ps1              # Auto-start Gateway (for Task Scheduler)
+├── install-gateway-startup.ps1    # Install Gateway startup task
 ├── setup/          # Configuration and setup scripts
 │   ├── setup-azure-openai-env.ps1
 │   ├── setup-azure-secrets.ps1
@@ -16,6 +18,35 @@ scripts/
     ├── test-stdio-separation.ps1
     └── test-voice-tool.ps1
 ```
+
+## Gateway Scripts
+
+### [`start-gateway.ps1`](start-gateway.ps1)
+**Purpose:** Start the VoiceMCP Gateway if not already running. Designed for Task Scheduler.
+
+**Usage:**
+```powershell
+.\scripts\start-gateway.ps1
+```
+
+**What it does:**
+- Checks if Gateway is already running (via health endpoint)
+- Kills Edge processes (Gateway needs exclusive Edge profile access)
+- Starts Gateway in headed mode if no Edge cookies exist, headless otherwise
+- Logs output to `%LOCALAPPDATA%\VoiceMCP\gateway.log`
+
+### [`install-gateway-startup.ps1`](install-gateway-startup.ps1)
+**Purpose:** Create a Windows Task Scheduler task to auto-start Gateway at logon.
+
+**Usage (run as Administrator):**
+```powershell
+.\scripts\install-gateway-startup.ps1
+```
+
+**What it does:**
+- Creates scheduled task "VoiceMCP-Gateway" triggered at user logon
+- Runs `start-gateway.ps1` in the user's session context
+- Task runs only when the user is logged on (needs Edge profile)
 
 ## Setup Scripts
 
