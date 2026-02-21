@@ -42,3 +42,9 @@
 - **Gateway:** Separate ASP.NET Core app (Gateway/Program.cs), responds to Teams <5s, forwards async
 - **Degradation:** Instances work without Gateway (one-way notifications only), graceful timeout handling
 - **See:** .ai-team/decisions/inbox/keaton-teams-reply-architecture.md for full architecture
+
+### Technical Paper: Two-Way Teams Communication (2025-07)
+- **Task:** Tamir requested a concise technical paper for Brady Gaster (Squad creator) explaining how to replicate the Playwright-based two-way Teams communication pattern
+- **Output:** `docs/teams-gateway-paper.md` (~1800 words)
+- **Covers:** Problem statement (DLP-blocked alternatives), Gateway singleton architecture, step-by-step flow (sentinel cards → Playwright DOM polling → callback delivery), key technical decisions (Edge profile auth, InnerTextAsync, sidebar click nav, heartbeat eviction, singleton mutex), implementation requirements, limitations, and future directions
+- **Audience:** Developer who will implement — includes code snippets from TeamsPlaywrightPoller, TeamsWebhookService, TeamsReplyListener, and the Gateway REST API reference
